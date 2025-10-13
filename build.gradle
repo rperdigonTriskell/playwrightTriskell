@@ -1,0 +1,74 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(23)
+    }
+}
+
+repositories { mavenCentral() }
+
+ext {
+    cucumberVersion = '7.29.0'
+    junitBomVersion = '5.13.4'       // <-- BOM de JUnit 5.x
+    playwrightVersion = '1.54.0'
+    extentCucumberAdapterVersion = '1.14.0'
+    poiVersion = '5.4.1'
+    lombokVersion = '1.18.42'
+}
+
+dependencies {
+    testImplementation(platform("org.junit:junit-bom:${junitBomVersion}"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.junit.platform:junit-platform-suite")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("io.cucumber:cucumber-java:${cucumberVersion}")
+    testImplementation("io.cucumber:cucumber-junit-platform-engine:${cucumberVersion}")
+    testImplementation("io.cucumber:cucumber-picocontainer:${cucumberVersion}")
+    implementation("com.microsoft.playwright:playwright:${playwrightVersion}")
+    testImplementation("tech.grasshopper:extentreports-cucumber7-adapter:${extentCucumberAdapterVersion}")
+    implementation("org.apache.poi:poi:${poiVersion}")
+    implementation("org.apache.poi:poi-ooxml:${poiVersion}")
+    compileOnly("org.projectlombok:lombok:${lombokVersion}")
+    annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
+    testCompileOnly("org.projectlombok:lombok:${lombokVersion}")
+    testAnnotationProcessor("org.projectlombok:lombok:${lombokVersion}")
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+configurations {
+    cucumberRuntime {
+        extendsFrom testImplementation
+    }
+}
+
+// Rerun de fallos con la CLI de Cucumber (ajusta a build/rerun.txt en Gradle)
+tasks.register('rerunFailures', JavaExec) {
+    dependsOn testClasses
+    classpath = configurations.cucumberRuntime + sourceSets.test.output
+    mainClass = 'io.cucumber.core.cli.Main'
+    args = [
+            '@build/rerun.txt',        // <-- antes era target/rerun.txt
+            '--glue','stepdefinitions','--glue','hooks',
+            '--plugin','pretty',
+            '--plugin','com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:'
+    ]
+}
+
+// Instala browsers de Playwright si lo necesitas
+tasks.register('playwrightInstall', JavaExec) {
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.microsoft.playwright.CLI'
+    args = ['install']
+}
