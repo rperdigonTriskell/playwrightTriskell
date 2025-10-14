@@ -7,6 +7,7 @@ build/
 target
 videos
 Downloads
+trace.zip
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
