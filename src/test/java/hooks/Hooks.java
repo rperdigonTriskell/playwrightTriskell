@@ -8,7 +8,10 @@ import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
 import utils.WebActions;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Hooks {
     public DriverFactory driverFactory;
@@ -20,22 +23,23 @@ public class Hooks {
         driverFactory = new DriverFactory();
         page = driverFactory.initDriver(browserName); // Passing browser name to launch the browser
     }
+    @After(order = 1)
+    public void takeScreenshotAndTrace(Scenario scenario) {
+        if (scenario.isFailed()) {
+            String screenshotName = scenario.getName().replaceAll(" ", "_");
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
 
-    //After runs in reverse order so order=1 will run first
+            byte[] screenshot = page.screenshot();
+            scenario.attach(screenshot, "image/png", screenshotName);
+
+            Path tracePath = Paths.get("target/traces/" + screenshotName + "_" + timestamp + ".zip");
+            DriverFactory.context.tracing().stop(new Tracing.StopOptions().setPath(tracePath));
+        }
+    }
+
     @After(order = 0)
     public void quitBrowser() {
         driverFactory.quitDriver();
     }
-
-    @After(order = 1)
-    public void takeScreenshotAndTrace(Scenario scenario) {
-        if (scenario.isFailed()) {
-            String screenshotName = scenario.getName().replaceAll("", "_"); //Replace all space in scenario name with underscore
-            byte[] sourcePath = page.screenshot();
-            scenario.attach(sourcePath, "image/png", screenshotName);  //Attach screenshot to report if scenario fails
-            DriverFactory.context.tracing().stop(new Tracing.StopOptions().setPath(Paths.get("target/" + screenshotName + ".zip")));
-        }
-    }
-
 
 }

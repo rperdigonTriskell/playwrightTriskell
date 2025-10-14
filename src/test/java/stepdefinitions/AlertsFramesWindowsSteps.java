@@ -7,7 +7,9 @@ import org.junit.jupiter.api.Assertions;
 import pages.AlertsFramesWindowsPage;
 
 public class AlertsFramesWindowsSteps {
-    AlertsFramesWindowsPage alertsFramesWindowsPage = new AlertsFramesWindowsPage(DriverFactory.getPage(), DriverFactory.getContext());
+
+    AlertsFramesWindowsPage alertsFramesWindowsPage =
+            new AlertsFramesWindowsPage(DriverFactory.getPage(), DriverFactory.getContext());
 
     @When("^user clicks \"([^\"]*)\" navbar option in Alerts, Frame & Windows page$")
     public void clickAlertFrameWinNavBar(String navbarOption) {
