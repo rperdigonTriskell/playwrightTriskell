@@ -18,9 +18,9 @@ Feature: Accessing the Guest in Touch app
   # with an Examples table that provides input variations.
   # ===========================================================
   Scenario Outline: Successful login with valid room and last name
-    When the guest enters room "<room>"
-    And the guest enters the last name "<last_name>"
-    And presses the "LOG IN" button
+    When enters room "<room>"
+    And enter last name "<last_name>"
+    And click "ACCEDER"
     Then the guest should see the main menu
 
     # Examples include variations of valid inputs.
